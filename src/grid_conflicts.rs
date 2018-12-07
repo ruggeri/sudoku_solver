@@ -45,7 +45,7 @@ impl SudokuGridConflictChecker {
     if !self.can_accomodate_conflicts(choice) {
       AddChoiceResult::CouldNotAddChoice
     } else {
-      self.add_conflicts(choice);
+      self.propagate_conflicts(choice);
       AddChoiceResult::DidAddChoice
     }
   }
@@ -54,14 +54,22 @@ impl SudokuGridConflictChecker {
     self.remove_conflicts(choice);
   }
 
-  fn add_conflicts(&mut self, choice: SudokuChoice) {
+  fn propagate_conflicts(&mut self, choice: SudokuChoice) {
     let (row_idx, col_idx) = choice.position.as_usize_pair();
 
     for new_row_idx in 0..9 {
+      if new_row_idx == row_idx {
+        continue;
+      }
+
       self.cell_conflicts[new_row_idx][col_idx].add_conflict(choice.value);
     }
 
     for new_col_idx in 0..9 {
+      if new_col_idx == col_idx {
+        continue;
+      }
+
       self.cell_conflicts[row_idx][new_col_idx].add_conflict(choice.value);
     }
 
@@ -72,36 +80,60 @@ impl SudokuGridConflictChecker {
   fn can_accomodate_conflicts(&self, choice: SudokuChoice) -> bool {
     let (row_idx, col_idx) = choice.position.as_usize_pair();
 
+    if !self.cell_conflicts[row_idx][col_idx].can_store_here(choice.value) {
+      return false;
+    }
+
     for new_row_idx in 0..9 {
+      if new_row_idx == row_idx {
+        continue;
+      }
+
       let cell_conflict = &self.cell_conflicts[new_row_idx][col_idx];
-      if !cell_conflict.can_accomodate_conflict(choice.value) {
-        return false
+      if !cell_conflict.can_restrict_here(choice.value) {
+        return false;
       }
     }
 
     for new_col_idx in 0..9 {
+      if new_col_idx == col_idx {
+        continue;
+      }
+
       let cell_conflict = &self.cell_conflicts[row_idx][new_col_idx];
-      if !cell_conflict. can_accomodate_conflict(choice.value) {
-        return false
+      if !cell_conflict.can_restrict_here(choice.value) {
+        return false;
       }
     }
 
-    let box_idx = SudokuBox::for_position(choice.position).to_usize();
-    self.box_conflicts[box_idx].can_accomodate_conflict(choice.value)
+    // TODO: Must add this logic back in.
+    // let box_idx = SudokuBox::for_position(choice.position).to_usize();
+    // self.box_conflicts[box_idx].can_restrict_here(choice.value)
+
+    true
   }
 
   fn remove_conflicts(&mut self, choice: SudokuChoice) {
     let (row_idx, col_idx) = choice.position.as_usize_pair();
 
     for new_row_idx in 0..9 {
+      if new_row_idx == row_idx {
+        continue;
+      }
+
       self.cell_conflicts[new_row_idx][col_idx].remove_conflict(choice.value);
     }
 
     for new_col_idx in 0..9 {
+      if new_col_idx == col_idx {
+        continue;
+      }
+
       self.cell_conflicts[row_idx][new_col_idx].remove_conflict(choice.value);
     }
 
-    let box_idx = SudokuBox::for_position(choice.position).to_usize();
-    self.box_conflicts[box_idx].remove_conflict(choice.value);
+    // TODO: Must add this logic back in.
+    // let box_idx = SudokuBox::for_position(choice.position).to_usize();
+    // self.box_conflicts[box_idx].remove_conflict(choice.value);
   }
 }

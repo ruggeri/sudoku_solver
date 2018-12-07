@@ -1,10 +1,20 @@
 extern crate sudoku_solving;
 
-use sudoku_solving::SudokuSolver;
+use sudoku_solving::{
+  SudokuGrid,
+  SudokuSolver
+};
 
 fn main() {
   println!("Hello, world!");
-  let solution = SudokuSolver::solve(&[]);
-  println!("Solution: {:?}", solution);
-  println!("Solution len: {}", solution.unwrap().len());
+
+  let mut grid = SudokuGrid::default();
+
+  let solution = SudokuSolver::solve(&[]).unwrap();
+
+  for choice in solution {
+    grid.place(choice);
+  }
+
+  grid.print();
 }

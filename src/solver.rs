@@ -68,12 +68,9 @@ impl SudokuSolver {
     loop {
       let choice = SudokuChoice::new(position, value);
 
-      match self.grid_checker.add_choice(choice) {
-        AddChoiceResult::DidAddChoice => {
-          self.choices.push(choice);
-          return true
-        },
-        _ => {}
+      if let AddChoiceResult::DidAddChoice = self.grid_checker.add_choice(choice) {
+        self.choices.push(choice);
+        return true
       }
 
       value = match value.next() {
@@ -111,6 +108,6 @@ impl SudokuSolver {
 fn shuffled_sudoku_positions() -> Vec<SudokuPosition> {
   let mut rng = rand::thread_rng();
   let mut sudoku_positions = SudokuPosition::all();
-  sudoku_positions.shuffle(&mut rng);
+  // sudoku_positions.shuffle(&mut rng);
   sudoku_positions
 }

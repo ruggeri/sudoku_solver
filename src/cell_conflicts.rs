@@ -23,7 +23,7 @@ impl SudokuGroupConflictChecker {
   }
 
   #[allow(if_same_then_else)]
-  pub fn can_accomodate_conflict(&self, val: SudokuValue) -> bool {
+  pub fn can_restrict_here(&self, val: SudokuValue) -> bool {
     assert!(self.number_free_values >= 1);
 
     if self.value_conflicts[val.as_idx()] > 0 {
@@ -35,6 +35,10 @@ impl SudokuGroupConflictChecker {
     } else {
       false
     }
+  }
+
+  pub fn can_store_here(&self, val: SudokuValue) -> bool {
+    self.value_conflicts[val.as_idx()] == 0
   }
 
   pub fn remove_conflict(&mut self, val: SudokuValue) {

@@ -13,6 +13,7 @@ pub mod sudoku_cell;
 pub mod value;
 
 pub use self::choice::SudokuChoice;
+pub use self::grid::SudokuGrid;
 pub use self::position::SudokuPosition;
 pub use self::solver::SudokuSolver;
 pub use self::value::SudokuValue;
