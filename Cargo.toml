@@ -1,0 +1,7 @@
+[package]
+name = "sudoku_solving"
+version = "0.1.0"
+authors = ["Ned Ruggeri <ruggeri@self-loop.com>"]
+
+[dependencies]
+rand = "0.6"
