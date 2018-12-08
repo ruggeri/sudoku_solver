@@ -29,16 +29,19 @@ impl SudokuGrid {
 impl fmt::Display for SudokuGrid {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     for row in &self.cells {
-      for cell in row {
-        match cell {
+      for idx in 0..(row.len()) {
+        match row[idx] {
           SudokuCell::Empty => write!(f, ".")?,
-          SudokuCell::Filled(value) => {
-            write!(f, "{}", value.as_u8_value())?
-          }
+          SudokuCell::Filled(value) => write!(f, "{:02}", value.as_u8_value())?
+        }
+
+
+        if idx < row.len() - 1 {
+          write!(f, "|")?;
         }
       }
 
-      writeln!(f)?;
+      writeln!(f, "")?;
     }
 
     Ok(())

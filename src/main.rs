@@ -7,10 +7,7 @@ use sudoku_solving::{
 
 fn main() {
   // Some pre-filled values for the Sudoku grid.
-  let filled_choices = vec![SudokuChoice::new(
-    SudokuPosition::new(8, 8),
-    SudokuValue::new(9),
-  )];
+  let filled_choices = vec![];
 
   // Try to solve the grid.
   let solution = SudokuSolver::solve(&filled_choices).unwrap();
