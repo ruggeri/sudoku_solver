@@ -1,4 +1,4 @@
-use super::position::SudokuPosition;
+use super::SudokuPosition;
 
 #[derive(Clone, Copy)]
 pub enum SudokuBox {
@@ -38,33 +38,19 @@ impl SudokuBox {
   pub fn top_left_position(self) -> SudokuPosition {
     use self::SudokuBox::*;
 
-    match self {
-      TopLeft => SudokuPosition::new(0, 0),
-      TopCenter => SudokuPosition::new(0, 3),
-      TopRight => SudokuPosition::new(0, 6),
-      CenterLeft => SudokuPosition::new(3, 0),
-      CenterCenter => SudokuPosition::new(3, 3),
-      CenterRight => SudokuPosition::new(3, 6),
-      BottomLeft => SudokuPosition::new(6, 0),
-      BottomCenter => SudokuPosition::new(6, 3),
-      BottomRight => SudokuPosition::new(6, 6),
-    }
-  }
+    let (row_idx, col_idx) = match self {
+      TopLeft => (0, 0),
+      TopCenter => (0, 3),
+      TopRight => (0, 6),
+      CenterLeft => (3, 0),
+      CenterCenter => (3, 3),
+      CenterRight => (3, 6),
+      BottomLeft => (6, 0),
+      BottomCenter => (6, 3),
+      BottomRight => (6, 6),
+    };
 
-  pub fn to_usize_idx(self) -> usize {
-    use self::SudokuBox::*;
-
-    match self {
-      TopLeft => 0,
-      TopCenter => 1,
-      TopRight => 2,
-      CenterLeft => 3,
-      CenterCenter => 4,
-      CenterRight => 5,
-      BottomLeft => 6,
-      BottomCenter => 7,
-      BottomRight => 8,
-    }
+    SudokuPosition::new(row_idx, col_idx)
   }
 
   pub fn positions(self) -> impl Iterator<Item=SudokuPosition> {

@@ -16,7 +16,7 @@ impl SudokuValue {
     val
   }
 
-  pub fn as_idx(self) -> usize {
+  pub fn as_usize_idx(self) -> usize {
     (self.as_u8_val() as usize) - 1
   }
 

@@ -1,11 +1,15 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SudokuPosition {
-  pub row_idx: u8,
-  pub col_idx: u8
+  row_idx: u8,
+  col_idx: u8
 }
 
 impl SudokuPosition {
   pub fn new(row_idx: u8, col_idx: u8) -> SudokuPosition {
+    // Note that I don't check 0 <= ... because u8 is by definition
+    // unsigned.
+    assert!(row_idx < 9 && col_idx < 9);
+
     SudokuPosition { row_idx, col_idx }
   }
 

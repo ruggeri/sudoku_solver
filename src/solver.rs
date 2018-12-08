@@ -2,17 +2,36 @@ use rand::{
   prelude::*,
   self,
 };
-use super::{
-  choice::SudokuChoice,
-  grid_conflicts::{AddChoiceResult, SudokuGridConflictChecker},
-  position::SudokuPosition,
-  value::SudokuValue,
+use super::core::{
+  SudokuChoice,
+  SudokuPosition,
+  SudokuValue,
 };
+use super::checker::{
+  AddChoiceResult,
+  SudokuGridConflictChecker,
+};
+
+#[must_use]
+#[derive(Clone, Copy)]
+enum SolverProgressStatus {
+  SolverCouldNotMakeProgress,
+  SolverMadeProgress,
+}
+
+impl SolverProgressStatus {
+  pub fn did_make_progress(self) -> bool {
+    match self {
+      SolverProgressStatus::SolverCouldNotMakeProgress => false,
+      SolverProgressStatus::SolverMadeProgress => true,
+    }
+  }
+}
 
 pub struct SudokuSolver {
   choices: Vec<SudokuChoice>,
+  fill_order: Vec<SudokuPosition>,
   grid_checker: SudokuGridConflictChecker,
-  fill_order: Vec<SudokuPosition>
 }
 
 impl SudokuSolver {
@@ -23,7 +42,7 @@ impl SudokuSolver {
       .collect();
 
     let solver = SudokuSolver {
-      choices: Vec::new(),
+      choices: given_choices.to_vec(),
       grid_checker: SudokuGridConflictChecker::new(),
       fill_order,
     };
@@ -37,22 +56,71 @@ impl SudokuSolver {
         return Some(self.choices);
       }
 
-      if !self.run_next() {
+      // Try to fill next position.
+      let next_position_to_fill = self.next_position_to_fill();
+      if self.try_to_extend_solution(SudokuValue::first(), next_position_to_fill).did_make_progress() {
+        // Great! Let's loop around and try to keep extending!
+        continue;
+      }
+
+      // Else, we must backtrack. But backtracking may fail, in which case
+      // we must report that we couldn't solve the Sudoku :-|.
+      if !self.backtrack().did_make_progress() {
         return None;
       }
     }
   }
 
-  fn run_next(&mut self) -> bool {
-    // Try to fill next position.
-    let next_position_to_fill = self.next_position_to_fill();
-    if self.try_to_fill(SudokuValue::first(), next_position_to_fill) {
-      return true;
-    }
+  // Try to extend solution at the specified position. `start_value`
+  // tells the initial value to try; this lets us not retry previously
+  // attempted values.
+  fn try_to_extend_solution(&mut self, start_value: SudokuValue, position: SudokuPosition) -> SolverProgressStatus {
+    let mut value = start_value;
+    loop {
+      let choice = SudokuChoice::new(position, value);
 
-    // If we could not, we must backtrack. Backtracking may fail, in
-    // which case game over.
-    self.backtrack()
+      // This choice is okay with existing conflicts. Save it to our
+      // choices and return.
+      if let AddChoiceResult::DidAddChoice = self.grid_checker.add_choice(choice) {
+        self.choices.push(choice);
+        return SolverProgressStatus::SolverMadeProgress;
+      }
+
+      // Try the next possible value.
+      value = match value.next() {
+        // If we can't fill any value at this position let the caller
+        // know.
+        None => return SolverProgressStatus::SolverCouldNotMakeProgress,
+        Some(new_value) => new_value,
+      };
+    }
+  }
+
+  fn backtrack(&mut self) -> SolverProgressStatus {
+    loop {
+      // If the choices stack is empty; it's game over. We exhausted all
+      // possibilities.
+      let prev_choice = match self.choices.pop() {
+        None => return SolverProgressStatus::SolverCouldNotMakeProgress,
+        Some(prev_choice) => prev_choice
+      };
+
+      // We're "undoing" this choice, so we must clear the conflicts we
+      // recorded for it.
+      self.grid_checker.remove_choice(prev_choice);
+
+      let next_value_to_try = match prev_choice.value.next() {
+        // If we've exhausted possible values for this position, we must
+        // keep on backtracking.
+        None => continue,
+        Some(next_value_to_try) => next_value_to_try,
+      };
+
+      // See if there is another value that works at this position.
+      if self.try_to_extend_solution(next_value_to_try, prev_choice.position).did_make_progress() {
+        return SolverProgressStatus::SolverMadeProgress;
+      }
+    }
   }
 
   fn is_complete(&self) -> bool {
@@ -62,52 +130,11 @@ impl SudokuSolver {
   fn next_position_to_fill(&self) -> SudokuPosition {
     self.fill_order[self.choices.len()]
   }
-
-  fn try_to_fill(&mut self, start_value: SudokuValue, position: SudokuPosition) -> bool {
-    let mut value = start_value;
-    loop {
-      let choice = SudokuChoice::new(position, value);
-
-      if let AddChoiceResult::DidAddChoice = self.grid_checker.add_choice(choice) {
-        self.choices.push(choice);
-        return true
-      }
-
-      value = match value.next() {
-        None => break,
-        Some(new_value) => new_value,
-      };
-    }
-
-    // Wasn't able to fill this position.
-    false
-  }
-
-  fn backtrack(&mut self) -> bool {
-    loop {
-      let last_choice = match self.choices.pop() {
-        None => return false,
-        Some(last_choice) => last_choice
-      };
-
-      self.grid_checker.remove_choice(last_choice);
-
-      let next_value = match last_choice.value.next() {
-        // Keep on backtracking.
-        None => continue,
-        Some(next_value) => next_value,
-      };
-
-      if self.try_to_fill(next_value, last_choice.position) {
-        return true
-      }
-    }
-  }
 }
 
 fn shuffled_sudoku_positions() -> Vec<SudokuPosition> {
   let mut rng = rand::thread_rng();
   let mut sudoku_positions = SudokuPosition::all();
-  // sudoku_positions.shuffle(&mut rng);
+  sudoku_positions.shuffle(&mut rng);
   sudoku_positions
 }

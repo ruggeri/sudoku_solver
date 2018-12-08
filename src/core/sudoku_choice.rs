@@ -1,5 +1,5 @@
-use super::value::SudokuValue;
-use super::position::SudokuPosition;
+use super::SudokuValue;
+use super::SudokuPosition;
 
 #[derive(Clone, Copy, Debug)]
 pub struct SudokuChoice {
