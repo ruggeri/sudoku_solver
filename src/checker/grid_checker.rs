@@ -1,5 +1,5 @@
 use super::SudokuGroupConflictChecker;
-use core::{SudokuBox, SudokuChoice};
+use core::{SudokuBox, SudokuChoice, SUDOKU_DIM_USIZE};
 
 // SudokuGridConflictChecker builds on top of
 // SudokuGroupConflictChecker. It checks whether a choice of value at a
@@ -8,7 +8,8 @@ use core::{SudokuBox, SudokuChoice};
 #[derive(Default)]
 pub struct SudokuGridConflictChecker {
   // Keeps a 9x9 grid of group checkers.
-  cell_checkers: [[SudokuGroupConflictChecker; 9]; 9],
+  cell_checkers:
+    [[SudokuGroupConflictChecker; SUDOKU_DIM_USIZE]; SUDOKU_DIM_USIZE],
 }
 
 impl SudokuGridConflictChecker {
@@ -21,8 +22,9 @@ impl SudokuGridConflictChecker {
 
       // If there were a panic, then it uninitialized memory could leak
       // out. Whatever...
-      let mut cell_checkers: [[SudokuGroupConflictChecker; 9]; 9] =
-        mem::uninitialized();
+      let mut cell_checkers: [[SudokuGroupConflictChecker;
+                               SUDOKU_DIM_USIZE];
+                               SUDOKU_DIM_USIZE] = mem::uninitialized();
 
       for row in &mut cell_checkers {
         for chell_checker in row {
@@ -76,7 +78,7 @@ impl SudokuGridConflictChecker {
     }
 
     // Check other cells in the same row.
-    for new_row_idx in 0..9 {
+    for new_row_idx in 0..SUDOKU_DIM_USIZE {
       if new_row_idx == choice_row_idx {
         // Skip; already checked that we can store here.
         continue;
@@ -90,7 +92,7 @@ impl SudokuGridConflictChecker {
     }
 
     // Check other cells in the same column.
-    for new_col_idx in 0..9 {
+    for new_col_idx in 0..SUDOKU_DIM_USIZE {
       if new_col_idx == choice_col_idx {
         // Skip; already checked that we can store here.
         continue;
@@ -133,7 +135,7 @@ impl SudokuGridConflictChecker {
     // "conflict" with its own chosen value; that would be perverse.
 
     // Propagate constraints to cells in the same row.
-    for new_row_idx in 0..9 {
+    for new_row_idx in 0..SUDOKU_DIM_USIZE {
       if new_row_idx == choice_row_idx {
         // Skip; already discussed above.
         continue;
@@ -144,7 +146,7 @@ impl SudokuGridConflictChecker {
     }
 
     // Propagate constraints to cells in the same column.
-    for new_col_idx in 0..9 {
+    for new_col_idx in 0..SUDOKU_DIM_USIZE {
       if new_col_idx == choice_col_idx {
         // Skip; already discussed above.
         continue;
@@ -181,7 +183,7 @@ impl SudokuGridConflictChecker {
     // `remove_conflict` on the chosen position we are undoing.
 
     // Remove constraints to cells in the same row.
-    for new_row_idx in 0..9 {
+    for new_row_idx in 0..SUDOKU_DIM_USIZE {
       if new_row_idx == choice_row_idx {
         // Skip; already discussed above.
         continue;
@@ -192,7 +194,7 @@ impl SudokuGridConflictChecker {
     }
 
     // Remove constraints to cells in the same column.
-    for new_col_idx in 0..9 {
+    for new_col_idx in 0..SUDOKU_DIM_USIZE {
       if new_col_idx == choice_col_idx {
         // Skip; already discussed above.
         continue;

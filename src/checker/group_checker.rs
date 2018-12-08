@@ -1,4 +1,4 @@
-use core::SudokuValue;
+use core::{SudokuValue, SUDOKU_DIM_U8, SUDOKU_DIM_USIZE};
 
 // A SudokGroupConflictChecker keeps track of what values are available
 // for a given cell in the Sudoku grid. This allows the user to quickly
@@ -8,7 +8,7 @@ pub struct SudokuGroupConflictChecker {
   // At position `i`, `value_conflicts[i]` is the number of cells that
   // conflict with the assignment of value `i + 1` here (note `i + 1` is
   // because SudokuValue ranges from 1 through 9 inclusive).
-  value_conflicts: [u8; 9],
+  value_conflicts: [u8; SUDOKU_DIM_USIZE],
   // The number of values that the cell may still possibly take on. When
   // this is zero then there is no possibly valid choice here. In that
   // case, we must have made bad prior choices.
@@ -20,8 +20,8 @@ impl SudokuGroupConflictChecker {
     // In the beginning, the cell is free of any conflicts, and can take
     // on any value.
     SudokuGroupConflictChecker {
-      value_conflicts: [0; 9],
-      number_free_values: 9,
+      value_conflicts: [0; SUDOKU_DIM_USIZE],
+      number_free_values: SUDOKU_DIM_U8,
     }
   }
 

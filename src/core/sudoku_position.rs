@@ -1,3 +1,5 @@
+use super::SUDOKU_DIM_U8;
+
 // A SudokuPosition is a position in the 9x9 Sudoku grid.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SudokuPosition {
@@ -9,7 +11,7 @@ impl SudokuPosition {
   pub fn new(row_idx: u8, col_idx: u8) -> SudokuPosition {
     // Note that I don't check 0 <= ... because u8 is by definition
     // unsigned.
-    assert!(row_idx < 9 && col_idx < 9);
+    assert!(row_idx < SUDOKU_DIM_U8 && col_idx < SUDOKU_DIM_U8);
 
     SudokuPosition { row_idx, col_idx }
   }
@@ -17,8 +19,8 @@ impl SudokuPosition {
   pub fn all() -> Vec<SudokuPosition> {
     let mut all = Vec::new();
 
-    for row_idx in 0..9 {
-      for col_idx in 0..9 {
+    for row_idx in 0..SUDOKU_DIM_U8 {
+      for col_idx in 0..SUDOKU_DIM_U8 {
         all.push(SudokuPosition { row_idx, col_idx });
       }
     }

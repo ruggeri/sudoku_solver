@@ -1,3 +1,5 @@
+pub use super::SUDOKU_DIM_U8;
+
 // A SudokuValue is a number 1 through 9 (inclusive). Zero is *not* a
 // valid Sudoku value.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -9,7 +11,7 @@ impl SudokuValue {
   }
 
   pub fn new(val: u8) -> SudokuValue {
-    assert!(1 <= val && val <= 9);
+    assert!(1 <= val && val <= SUDOKU_DIM_U8);
     SudokuValue(val)
   }
 
@@ -30,7 +32,7 @@ impl SudokuValue {
   pub fn next(self) -> Option<SudokuValue> {
     let val = self.as_u8_value();
 
-    if val == 9 {
+    if val == SUDOKU_DIM_U8 {
       None
     } else {
       Some(SudokuValue::new(val + 1))
