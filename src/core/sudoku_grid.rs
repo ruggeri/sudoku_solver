@@ -1,5 +1,5 @@
-use std::fmt;
 use super::{SudokuCell, SudokuChoice};
+use std::fmt;
 
 pub struct SudokuGrid {
   cells: [[SudokuCell; 9]; 9],
@@ -23,7 +23,9 @@ impl fmt::Display for SudokuGrid {
       for cell in row {
         match cell {
           SudokuCell::Empty => write!(f, ".")?,
-          SudokuCell::Filled(value) => write!(f, "{}", value.as_u8_val())?,
+          SudokuCell::Filled(value) => {
+            write!(f, "{}", value.as_u8_val())?
+          }
         }
       }
 

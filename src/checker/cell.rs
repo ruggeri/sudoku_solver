@@ -1,9 +1,9 @@
-use ::core::SudokuValue;
+use core::SudokuValue;
 
 #[derive(Clone, Default)]
 pub struct SudokuGroupConflictChecker {
   value_conflicts: [u8; 9],
-  number_free_values: u8
+  number_free_values: u8,
 }
 
 impl SudokuGroupConflictChecker {

@@ -1,7 +1,7 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SudokuPosition {
   row_idx: u8,
-  col_idx: u8
+  col_idx: u8,
 }
 
 impl SudokuPosition {
@@ -18,7 +18,7 @@ impl SudokuPosition {
 
     for row_idx in 0..9 {
       for col_idx in 0..9 {
-        all.push(SudokuPosition{row_idx, col_idx});
+        all.push(SudokuPosition { row_idx, col_idx });
       }
     }
 
@@ -28,7 +28,7 @@ impl SudokuPosition {
   pub fn add(self, row_offset: u8, col_offset: u8) -> SudokuPosition {
     SudokuPosition::new(
       self.row_idx + row_offset,
-      self.col_idx + col_offset
+      self.col_idx + col_offset,
     )
   }
 

@@ -1,5 +1,5 @@
-use super::SudokuValue;
 use super::SudokuPosition;
+use super::SudokuValue;
 
 #[derive(Clone, Copy, Debug)]
 pub struct SudokuChoice {
@@ -8,7 +8,10 @@ pub struct SudokuChoice {
 }
 
 impl SudokuChoice {
-  pub fn new(position: SudokuPosition, value: SudokuValue) -> SudokuChoice {
-    SudokuChoice{position, value}
+  pub fn new(
+    position: SudokuPosition,
+    value: SudokuValue,
+  ) -> SudokuChoice {
+    SudokuChoice { position, value }
   }
 }

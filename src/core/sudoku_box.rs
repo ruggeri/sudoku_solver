@@ -29,9 +29,7 @@ impl SudokuBox {
       (2, 0) => BottomLeft,
       (2, 1) => BottomCenter,
       (2, 2) => BottomRight,
-      _ => {
-        unreachable!("boxes should have proper index")
-      }
+      _ => unreachable!("boxes should have proper index"),
     }
   }
 
@@ -53,7 +51,7 @@ impl SudokuBox {
     SudokuPosition::new(row_idx, col_idx)
   }
 
-  pub fn positions(self) -> impl Iterator<Item=SudokuPosition> {
+  pub fn positions(self) -> impl Iterator<Item = SudokuPosition> {
     (0..3).flat_map(move |rel_row_idx| {
       (0..3).map(move |rel_col_idx| {
         self.top_left_position().add(rel_row_idx, rel_col_idx)
