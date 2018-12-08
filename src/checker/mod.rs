@@ -1,5 +1,7 @@
-mod cell;
-mod grid;
+mod grid_checker;
+mod group_checker;
 
-pub use self::cell::SudokuGroupConflictChecker;
-pub use self::grid::{AddChoiceResult, SudokuGridConflictChecker};
+pub use self::grid_checker::{
+  AddChoiceResult, SudokuGridConflictChecker,
+};
+pub use self::group_checker::SudokuGroupConflictChecker;
