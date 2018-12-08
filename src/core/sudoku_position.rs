@@ -1,3 +1,4 @@
+// A SudokuPosition is a position in the 9x9 Sudoku grid.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SudokuPosition {
   row_idx: u8,
@@ -32,6 +33,7 @@ impl SudokuPosition {
     )
   }
 
+  // usize pair is helpful for indexing into 2D arrays.
   pub fn as_usize_pair(self) -> (usize, usize) {
     (self.row_idx as usize, self.col_idx as usize)
   }

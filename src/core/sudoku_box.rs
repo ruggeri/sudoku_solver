@@ -1,5 +1,6 @@
 use super::SudokuPosition;
 
+// Represents a 3x3 "box" in the Sudoku grid.
 #[derive(Clone, Copy)]
 pub enum SudokuBox {
   TopLeft,
@@ -14,6 +15,8 @@ pub enum SudokuBox {
 }
 
 impl SudokuBox {
+  // `for_position` returns the SudokuBox in which the given
+  // SudokuPosition lives.
   pub fn for_position(position: SudokuPosition) -> SudokuBox {
     use self::SudokuBox::*;
 
@@ -33,6 +36,8 @@ impl SudokuBox {
     }
   }
 
+  // `top_left_position` returns the SudokuPosition for the top left
+  // corner of the SudokuBox.
   pub fn top_left_position(self) -> SudokuPosition {
     use self::SudokuBox::*;
 
@@ -51,6 +56,8 @@ impl SudokuBox {
     SudokuPosition::new(row_idx, col_idx)
   }
 
+  // `positions` returns an iterator over the SudokuPositions in this
+  // SudokuBox.
   pub fn positions(self) -> impl Iterator<Item = SudokuPosition> {
     (0..3).flat_map(move |rel_row_idx| {
       (0..3).map(move |rel_col_idx| {

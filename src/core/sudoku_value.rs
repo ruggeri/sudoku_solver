@@ -1,3 +1,5 @@
+// A SudokuValue is a number 1 through 9 (inclusive). Zero is *not* a
+// valid Sudoku value.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SudokuValue(u8);
 
@@ -11,17 +13,22 @@ impl SudokuValue {
     SudokuValue(val)
   }
 
-  pub fn as_u8_val(self) -> u8 {
+  // `as_u8_value` returns the numeric value 1 through 9 (inclusive).
+  // Should be used only for display.
+  pub fn as_u8_value(self) -> u8 {
     let SudokuValue(val) = self;
     val
   }
 
+  // `as_usize_idx` returns a usize value 0 through 8 (inclusive). The
+  // intent is for the usize to be used as an index in an array.
   pub fn as_usize_idx(self) -> usize {
-    (self.as_u8_val() as usize) - 1
+    (self.as_u8_value() as usize) - 1
   }
 
+  // `next` is used so that the caller can iterate through SudokuValues.
   pub fn next(self) -> Option<SudokuValue> {
-    let val = self.as_u8_val();
+    let val = self.as_u8_value();
 
     if val == 9 {
       None
