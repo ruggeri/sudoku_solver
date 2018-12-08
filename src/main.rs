@@ -17,6 +17,9 @@ fn main() {
 
   // Write the solution choices into a grid, and print it.
   let mut grid = SudokuGrid::default();
+  for choice in filled_choices {
+    grid.place(choice);
+  }
   for choice in solution {
     grid.place(choice);
   }
