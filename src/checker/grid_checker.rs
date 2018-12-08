@@ -1,33 +1,26 @@
 use super::SudokuGroupConflictChecker;
 use core::{SudokuBox, SudokuChoice};
 
-#[must_use]
-#[derive(Clone, Copy)]
-pub enum AddChoiceResult {
-  CouldNotAddChoice,
-  DidAddChoice,
-}
-
-impl AddChoiceResult {
-  pub fn did_add(self) -> bool {
-    match self {
-      AddChoiceResult::CouldNotAddChoice => false,
-      AddChoiceResult::DidAddChoice => true,
-    }
-  }
-}
-
+// SudokuGridConflictChecker builds on top of
+// SudokuGroupConflictChecker. It checks whether a choice of value at a
+// given position is compatible with constraints on all the other values
+// in the same row/column/box.
 #[derive(Default)]
 pub struct SudokuGridConflictChecker {
+  // Keeps a 9x9 grid of group checkers.
   cell_checkers: [[SudokuGroupConflictChecker; 9]; 9],
 }
 
 impl SudokuGridConflictChecker {
   pub fn new() -> SudokuGridConflictChecker {
+    // A SudokuGroupConflictChecker is not Copy, so it is a little
+    // annoying to initialize a array of checkers.
     let cell_checkers = unsafe {
       use std::mem;
       use std::ptr;
 
+      // If there were a panic, then it uninitialized memory could leak
+      // out. Whatever...
       let mut cell_checkers: [[SudokuGroupConflictChecker; 9]; 9] =
         mem::uninitialized();
 
@@ -43,6 +36,11 @@ impl SudokuGridConflictChecker {
     SudokuGridConflictChecker { cell_checkers }
   }
 
+  // `add_choice` records the choice, updating all the relevant checkers
+  // in the same row/column/box. However, if the choice of value is
+  // either (1) invalid at the specified position, or (2) would
+  // "overconstrain" other cells in the same row/column/box so they have
+  // no remaining possible value, then we reject the choice.
   pub fn add_choice(
     &mut self,
     choice: SudokuChoice,
@@ -55,21 +53,29 @@ impl SudokuGridConflictChecker {
     }
   }
 
+  // `remove_choice` updates the cells in the same row/column/box to,
+  // removing the constraint imposed on them by the choice of value
+  // here.
   pub fn remove_choice(&mut self, choice: SudokuChoice) {
     self.unpropagate_conflicts(choice);
   }
 
+  // `can_accomodate_choice` checks first whether the choice is valid at
+  // the specified position, and that it doesn't "overconstrain" other
+  // values in the same row/column/box.
   #[allow(if_same_then_else)]
   fn can_accomodate_choice(&self, choice: SudokuChoice) -> bool {
     let (choice_row_idx, choice_col_idx) =
       choice.position.as_usize_pair();
 
+    // If the choice is invalid to store here, then this is bogus.
     if !self.cell_checkers[choice_row_idx][choice_col_idx]
       .can_store_here(choice.value)
     {
       return false;
     }
 
+    // Check other cells in the same row.
     for new_row_idx in 0..9 {
       if new_row_idx == choice_row_idx {
         // Skip; already checked that we can store here.
@@ -83,6 +89,7 @@ impl SudokuGridConflictChecker {
       }
     }
 
+    // Check other cells in the same column.
     for new_col_idx in 0..9 {
       if new_col_idx == choice_col_idx {
         // Skip; already checked that we can store here.
@@ -96,6 +103,7 @@ impl SudokuGridConflictChecker {
       }
     }
 
+    // Check other cells in the same box.
     SudokuBox::for_position(choice.position).positions().all(
       |box_pos| {
         let (box_pos_row_idx, box_pos_col_idx) =
@@ -120,9 +128,11 @@ impl SudokuGridConflictChecker {
     let (choice_row_idx, choice_col_idx) =
       choice.position.as_usize_pair();
 
-    // I've decide not to "add_conflict" at the position where we are
-    // setting this value.
+    // I've decided not to "add_conflict" at the position where we are
+    // setting this value. The checker for this position shouldn't be in
+    // "conflict" with its own chosen value; that would be perverse.
 
+    // Propagate constraints to cells in the same row.
     for new_row_idx in 0..9 {
       if new_row_idx == choice_row_idx {
         // Skip; already discussed above.
@@ -133,6 +143,7 @@ impl SudokuGridConflictChecker {
         .add_conflict(choice.value);
     }
 
+    // Propagate constraints to cells in the same column.
     for new_col_idx in 0..9 {
       if new_col_idx == choice_col_idx {
         // Skip; already discussed above.
@@ -143,6 +154,7 @@ impl SudokuGridConflictChecker {
         .add_conflict(choice.value);
     }
 
+    // Propagate constraints to cells in the same box.
     SudokuBox::for_position(choice.position)
       .positions()
       .for_each(|box_pos| {
@@ -165,10 +177,10 @@ impl SudokuGridConflictChecker {
     let (choice_row_idx, choice_col_idx) =
       choice.position.as_usize_pair();
 
-    // I've decide not to "add_conflict" at the position where we are
-    // setting this value. And thus I don't have to remove a conflict
-    // for there.
+    // See not above in `propagate_conflicts` for why I don't need to
+    // `remove_conflict` on the chosen position we are undoing.
 
+    // Remove constraints to cells in the same row.
     for new_row_idx in 0..9 {
       if new_row_idx == choice_row_idx {
         // Skip; already discussed above.
@@ -179,6 +191,7 @@ impl SudokuGridConflictChecker {
         .remove_conflict(choice.value);
     }
 
+    // Remove constraints to cells in the same column.
     for new_col_idx in 0..9 {
       if new_col_idx == choice_col_idx {
         // Skip; already discussed above.
@@ -189,6 +202,7 @@ impl SudokuGridConflictChecker {
         .remove_conflict(choice.value);
     }
 
+    // Remove constraints to cells in the same box.
     SudokuBox::for_position(choice.position)
       .positions()
       .for_each(|box_pos| {
@@ -204,5 +218,24 @@ impl SudokuGridConflictChecker {
             .remove_conflict(choice.value);
         }
       });
+  }
+}
+
+// AddChoiceResult will tell the caller of `add_choice` whether their
+// choice could be made. The caller must not ignore this return value,
+// as their choice may have been impossible (and therefore rejected).
+#[must_use]
+#[derive(Clone, Copy)]
+pub enum AddChoiceResult {
+  CouldNotAddChoice,
+  DidAddChoice,
+}
+
+impl AddChoiceResult {
+  pub fn did_add(self) -> bool {
+    match self {
+      AddChoiceResult::CouldNotAddChoice => false,
+      AddChoiceResult::DidAddChoice => true,
+    }
   }
 }
