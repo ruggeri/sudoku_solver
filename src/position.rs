@@ -5,6 +5,10 @@ pub struct SudokuPosition {
 }
 
 impl SudokuPosition {
+  pub fn new(row_idx: u8, col_idx: u8) -> SudokuPosition {
+    SudokuPosition { row_idx, col_idx }
+  }
+
   pub fn all() -> Vec<SudokuPosition> {
     let mut all = Vec::new();
 
@@ -15,6 +19,13 @@ impl SudokuPosition {
     }
 
     all
+  }
+
+  pub fn add(self, row_offset: u8, col_offset: u8) -> SudokuPosition {
+    SudokuPosition::new(
+      self.row_idx + row_offset,
+      self.col_idx + col_offset
+    )
   }
 
   pub fn as_usize_pair(self) -> (usize, usize) {

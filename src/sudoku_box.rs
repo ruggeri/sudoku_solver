@@ -1,9 +1,6 @@
 use super::position::SudokuPosition;
 
 #[derive(Clone, Copy)]
-pub struct BoxCoord(pub u8, pub u8);
-
-#[derive(Clone, Copy)]
 pub enum SudokuBox {
   TopLeft,
   TopCenter,
@@ -38,23 +35,23 @@ impl SudokuBox {
     }
   }
 
-  pub fn to_box_coord(self) -> BoxCoord {
+  pub fn top_left_position(self) -> SudokuPosition {
     use self::SudokuBox::*;
 
     match self {
-      TopLeft => BoxCoord(0, 0),
-      TopCenter => BoxCoord(0, 1),
-      TopRight => BoxCoord(0, 2),
-      CenterLeft => BoxCoord(1, 0),
-      CenterCenter => BoxCoord(1, 1),
-      CenterRight => BoxCoord(1, 2),
-      BottomLeft => BoxCoord(2, 0),
-      BottomCenter => BoxCoord(2, 1),
-      BottomRight => BoxCoord(2,2),
+      TopLeft => SudokuPosition::new(0, 0),
+      TopCenter => SudokuPosition::new(0, 3),
+      TopRight => SudokuPosition::new(0, 6),
+      CenterLeft => SudokuPosition::new(3, 0),
+      CenterCenter => SudokuPosition::new(3, 3),
+      CenterRight => SudokuPosition::new(3, 6),
+      BottomLeft => SudokuPosition::new(6, 0),
+      BottomCenter => SudokuPosition::new(6, 3),
+      BottomRight => SudokuPosition::new(6, 6),
     }
   }
 
-  pub fn to_usize(self) -> usize {
+  pub fn to_usize_idx(self) -> usize {
     use self::SudokuBox::*;
 
     match self {
@@ -68,5 +65,13 @@ impl SudokuBox {
       BottomCenter => 7,
       BottomRight => 8,
     }
+  }
+
+  pub fn positions(self) -> impl Iterator<Item=SudokuPosition> {
+    (0..3).flat_map(move |rel_row_idx| {
+      (0..3).map(move |rel_col_idx| {
+        self.top_left_position().add(rel_row_idx, rel_col_idx)
+      })
+    })
   }
 }
